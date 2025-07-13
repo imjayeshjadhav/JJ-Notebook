@@ -5,6 +5,7 @@ import path from 'path'
 import rateLimiter from "./middleware/rateLimitter.js"
 import notesrouter from "./routes/notesRoute.js"
 import { connectDB } from "./config/db.js"
+import job from "./config/cron.js"
 
 dotenv.config()
 
@@ -16,6 +17,10 @@ if(process.env.NODE_ENV !== "production" ){
     app.use(cors({
         origin:"http://localhost:5173",
     }))
+}
+
+if(process.env.API_URL === "production"){
+    job.start();
 }
 
 app.use(express.json())
@@ -31,6 +36,10 @@ if(process.env.NODE_ENV === "production"){
         res.sendFile(path.join(__dirname,"../frontend","dist","index.html"))
     })
 }
+
+app.get("/api/health", (req,res) =>{
+    res.status(200).json({success:true})
+})
 
 connectDB().then(()=>{
     app.listen(PORT,()=>{
